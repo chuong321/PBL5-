@@ -1,0 +1,35 @@
+# Git & IDE
+.git
+.gitignore
+.vscode
+.idea
+
+# Python
+__pycache__
+*.pyc
+venv/
+.venv/
+*.egg-info
+
+# Runtime data (will be created at runtime or mounted as volumes)
+database/*.db
+uploads/*
+logs/
+*.log
+
+# Docs
+README.md
+ARCHITECTURE.md
+SUMMARY.md
+docs/
+
+# ESP32 client code (not needed in server container)
+ESP32_CLIENT_EXAMPLE/
+
+# Tests
+test_*.py
+.pytest_cache
+
+# Windows
+startup.bat
+Thumbs.db

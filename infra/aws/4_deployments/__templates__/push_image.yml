@@ -1,0 +1,78 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - IMAGES=$(echo "$BUILD_IMAGES" | jq -c '.[]')
+
+  pre_build:
+    commands:
+      # Check if model files exist in the repo
+      - |
+        if [ ! -f "model_trash/best.pt" ] || [ ! -f "model_liquid/best.pt" ]; then
+          echo "Model files not found - skipping Docker build"
+          echo "This is expected for non-AI commits"
+          echo '[{"name":"trash-classification","imageUri":"SKIP"}]' > imagedefinitions.json
+          export SKIP_BUILD=true
+        else
+          echo "Model files found - will build Docker image"
+          export SKIP_BUILD=false
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+        fi
+
+  build:
+    commands:
+      - |
+        if [ "$SKIP_BUILD" = "true" ]; then
+          echo "Skipping Docker build - no model files"
+          exit 0
+        fi
+
+        for IMAGE in $IMAGES; do
+          REPOSITORY_URL=$(echo "$IMAGE" | jq -r '.repository')
+          DOCKERFILE=$(echo "$IMAGE" | jq -r '.dockerfile')
+          IMAGE_URI="$REPOSITORY_URL:$IMAGE_TAG"
+
+          DOCKER_BUILDKIT=1 \
+          docker build -f $DOCKERFILE \
+          --progress plain \
+          --cache-from $REPOSITORY_URL:latest \
+          --tag $REPOSITORY_URL:latest \
+          --tag $IMAGE_URI \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          "."
+        done
+
+  post_build:
+    commands:
+      - |
+        if [ "$SKIP_BUILD" = "true" ]; then
+          echo "No Docker image to push"
+          exit 0
+        fi
+
+        IMAGE_DEFINITIONS="[]"
+        for IMAGE in $IMAGES; do
+          NAME=$(echo "$IMAGE" | jq -r '.name')
+          REPOSITORY_URL=$(echo "$IMAGE" | jq -r '.repository')
+          IMAGE_URI="$REPOSITORY_URL:$IMAGE_TAG"
+
+          docker push $REPOSITORY_URL:latest
+          docker push $IMAGE_URI
+
+          IMAGE_DEFINITION=$(printf '{"name":"%s","imageUri":"%s"}' "$NAME" "$IMAGE_URI")
+          IMAGE_DEFINITIONS=$(echo $IMAGE_DEFINITIONS | jq ". + [$IMAGE_DEFINITION]")
+        done
+
+        echo $IMAGE_DEFINITIONS | jq '.' > imagedefinitions.json
+
+cache:
+  paths:
+    - /root/.cache/docker
+
+artifacts:
+  files:
+    - imagedefinitions.json
+  discard-paths: yes

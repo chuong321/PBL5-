@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Remind Docker Build",
+  "description": "After pushing code, reminds the developer to run build_and_push script if model files exist locally, so the Docker image with models gets pushed to ECR.",
+  "version": "1",
+  "when": {
+    "type": "postToolUse",
+    "toolTypes": [
+      "shell"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "If the shell command was a git push, remind the user: 'Docker image cần được build lại nếu có thay đổi code. Chạy build_and_push.bat (Windows) hoặc bash build_and_push.sh (Linux/Mac) để build image với model files và push lên ECR.'"
+  }
+}

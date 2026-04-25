@@ -84,9 +84,17 @@ Thumbs.db
 node_modules/
 npm-debug.log
 
-# Model files (lớn)
-# *.pt
+# Model files (lớn - đóng gói trong Docker image)
+*.pt
 *.pth
 *.onnx
 
 /docs/
+
+# Terraform / Terragrunt
+.terragrunt-cache/
+**/.terragrunt-cache/
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl

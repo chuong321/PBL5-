@@ -1,0 +1,51 @@
+#!/bin/bash
+#==============================================================================
+# Git pre-push hook
+# Check if model files exist locally → build Docker + push to ECR
+# If no model files → push code normally, skip Docker build
+#==============================================================================
+
+AWS_ACCOUNT_ID="536322508586"
+AWS_REGION="ap-southeast-1"
+REPO_NAME="trash-classification"
+ECR_URL="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+if [ -f "model_trash/best.pt" ] || [ -f "model_liquid/best.pt" ]; then
+    echo ""
+    echo "============================================"
+    echo "  Model files detected - Building Docker image"
+    echo "============================================"
+
+    IMAGE_TAG=$(git rev-parse --short HEAD)
+
+    echo "[1/4] Logging in to ECR..."
+    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_URL}
+    if [ $? -ne 0 ]; then
+        echo "WARNING: ECR login failed. Skipping Docker build, push continues."
+        exit 0
+    fi
+
+    echo "[2/4] Building Docker image..."
+    docker build -t ${REPO_NAME}:${IMAGE_TAG} -t ${REPO_NAME}:latest .
+    if [ $? -ne 0 ]; then
+        echo "WARNING: Docker build failed. Skipping push to ECR, git push continues."
+        exit 0
+    fi
+
+    echo "[3/4] Tagging..."
+    docker tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}
+    docker tag ${REPO_NAME}:latest ${ECR_URL}/${REPO_NAME}:latest
+
+    echo "[4/4] Pushing to ECR..."
+    docker push ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}
+    docker push ${ECR_URL}/${REPO_NAME}:latest
+
+    echo ""
+    echo "Docker image pushed: ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}"
+    echo "============================================"
+else
+    echo "No model files found - skipping Docker build"
+fi
+
+# Always allow git push to proceed
+exit 0

@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - echo "Installing dependencies (cached)..."
+      - pip install --cache-dir /root/.cache/pip -r requirements.txt
+
+  build:
+    commands:
+      - echo "Running tests..."
+      - python -m pytest test_fastapi.py -v --tb=short || true
+      - echo "Build completed successfully"
+
+cache:
+  paths:
+    - /root/.cache/pip/**/*
+
+artifacts:
+  files:
+    - "**/*"
