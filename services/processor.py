@@ -30,7 +30,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import (
-    MODEL_PATH, MODEL_SECONDARY_PATH, QUEUE_TIMEOUT, MAX_QUEUE_SIZE,
+    MODEL_TRASH_PATH, MODEL_LIQUID_PATH, QUEUE_TIMEOUT, MAX_QUEUE_SIZE,
     WEIGHT_THRESHOLD, YOLO1_CONF, YOLO1_IMGSZ, YOLO1_DEVICE,
     YOLO2_CONF, YOLO2_IMGSZ, YOLO2_DEVICE, UPLOAD_FOLDER, BUFFER_SIZE
 )
@@ -83,10 +83,10 @@ class PrimaryProcessor(mp.Process):
     def load_model(self):
         """Load YOLO1 model"""
         try:
-            if os.path.exists(MODEL_PATH):
+            if os.path.exists(MODEL_TRASH_PATH):
                 from ultralytics import YOLO
-                self.yolo_model = YOLO(MODEL_PATH)
-                print(f"[PRIMARY-{self.worker_id}] ✓ YOLO1 model loaded: {MODEL_PATH}")
+                self.yolo_model = YOLO(MODEL_TRASH_PATH)
+                print(f"[PRIMARY-{self.worker_id}] ✓ YOLO1 model loaded: {MODEL_TRASH_PATH}")
                 return True
             else:
                 print(f"[PRIMARY-{self.worker_id}] ⚠ best.pt not found. Using dummy mode.")
@@ -248,10 +248,10 @@ class SecondaryProcessor(mp.Process):
     def load_model(self):
         """Load YOLO2 model"""
         try:
-            if os.path.exists(MODEL_SECONDARY_PATH):
+            if os.path.exists(MODEL_LIQUID_PATH):
                 from ultralytics import YOLO
-                self.yolo_model = YOLO(MODEL_SECONDARY_PATH)
-                print(f"[SECONDARY-{self.worker_id}] ✓ YOLO2 model loaded: {MODEL_SECONDARY_PATH}")
+                self.yolo_model = YOLO(MODEL_LIQUID_PATH)
+                print(f"[SECONDARY-{self.worker_id}] ✓ YOLO2 model loaded: {MODEL_LIQUID_PATH}")
                 return True
             else:
                 print(f"[SECONDARY-{self.worker_id}] ⚠ best_secondary.pt not found. Using dummy mode.")

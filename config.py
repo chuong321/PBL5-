@@ -24,8 +24,10 @@ UPLOAD_FOLDER = os.path.join(basedir, 'uploads')
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
 
 # ==================== AI/ML ====================
-MODEL_PATH = os.path.join(basedir, 'best.pt')
-MODEL_SECONDARY_PATH = os.path.join(basedir, 'best2.pt')  # YOLO2 model
+# Trash detection
+MODEL_TRASH_PATH = os.path.join(basedir, 'best.pt')
+# Liquid detection
+MODEL_LIQUID_PATH = os.path.join(basedir, 'model_liquid', 'best.pt')
 BUFFER_SIZE = 5  # Nhận 5 ảnh trước khi inference
 
 # ==================== MULTIPROCESSING ====================
