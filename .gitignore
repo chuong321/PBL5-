@@ -85,7 +85,7 @@ node_modules/
 npm-debug.log
 
 # Model files (lớn)
-*.pt
+# *.pt
 *.pth
 *.onnx
 

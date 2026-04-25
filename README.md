@@ -546,7 +546,7 @@ Gặp lỗi? Kiểm tra:
 ## 🔧 Cấu hình
 BUFFER_SIZE = 5              # Số ảnh buffer trước khi inference
 UPLOAD_FOLDER = 'uploads'    # Thư mục lưu ảnh
-MODEL_PATH = 'best.pt'       # Đường dẫn YOLO model
+MODEL_TRASH_PATH = 'best.pt'       # Đường dẫn YOLO model
 ```
 
 ### YOLO Optimization (Performance)
